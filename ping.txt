@@ -1,0 +1,64 @@
+!
+! 1. Process with rank 0 begins by sending the first message assuming 
+!    "msg_recv=0".
+!
+! 2. In an endless loop, all processes wait for a message from any process.
+!    There are two possible types of a message:
+!    - "normal" message is a real number "msg_recv"
+!    - "end-of-game" message
+!
+!   The type of a message can be defined either by a different tag or by a
+!   special value of "msg_recv" (differentiation by tag is preferred).
+!
+! 3. When a process receives "end-of-game" message it stops waiting for more
+!    messages and exits the loop.
+
+! 4. When a process receives "normal" message, but the received value is
+!    larger than a some threshold (msg_recv > msg_threshold), it sends
+!    "end-of-game" messages to all other processes and exits the loop.
+!
+! 5. When a process receives "normal" message with received value less than
+!    the threshold, then the process:
+!
+!   - generates a random real number "x" in the range <0; 1) and
+!     adds it to the received value "msg_recv"
+!     (new message value "msg_send" will be "msg_recv" + "x"); 
+!   - generates randomly an integer "j" in the range <0; np-1> in such a way
+!     that "j" is not the rank of the actual process;
+!   - sends a "normal" message "msg_send" to the process with the rank "j";
+!   - prints "msg_send", its rank and the rank of the process where the
+!     message has been send to;
+!   - increments its counter of sent messages;
+!   - resumes waiting for further messages.
+!
+! 6. After exiting the loop, every process prints its rank and the number of
+!    messages it has send.
+!
+! Optional extensions:
+!
+! 7. At the beginning, before sending the first message, the root can
+!    prompt the user for the threshold value and then broadcast this
+!    value to other processes.
+!
+! 8. Apart from printing the number of messages send, processes send this
+!    value to the root (try to use MPI_GATHER). The root than prints this
+!    statistics for every process and the total number of send messages.
+!
+! Here is an example of the output:
+! $ mpirun -np 4 ./a2.exe 
+!
+! What is the threshold ? 5
+! Send 0 to 2 Message   0.789020
+! Send 2 to 3 Message   1.056683
+! Send 3 to 1 Message   1.883816
+! Send 1 to 3 Message   2.505021
+! Send 3 to 0 Message   3.335455
+! Send 0 to 2 Message   4.230506
+! Send 2 to 1 Message   4.476061
+! Send 1 to 0 Message   4.670770
+! Send 0 to 3 Message   5.060951
+! Rank 0 has send 3 messages
+! Rank 1 has send 2 messages
+! Rank 2 has send 2 messages
+! Rank 3 has send 2 messages
+! Statistics: 3 2 2 2
